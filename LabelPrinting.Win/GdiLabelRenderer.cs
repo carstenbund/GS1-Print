@@ -3,7 +3,7 @@ using LabelPrinting.Core;
 using ZXing;
 using ZXing.Common;
 using ZXing.Datamatrix;
-using ZXing.Rendering;
+using ZXing.Windows.Compatibility;
 
 namespace LabelPrinting.Win;
 
@@ -80,12 +80,12 @@ public sealed class GdiLabelRenderer
     {
         var encodingOptions = new EncodingOptions
         {
-            Width = 200,
-            Height = 200,
+            Width = 100,
+            Height = 100,
             Margin = 0
         };
 
-        var writer = new BarcodeWriter
+        var writer = new BarcodeWriter<Bitmap>
         {
             Format = BarcodeFormat.DATA_MATRIX,
             Options = encodingOptions,
