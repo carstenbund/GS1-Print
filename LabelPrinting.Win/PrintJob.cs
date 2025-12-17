@@ -44,6 +44,12 @@ public sealed class PrintJob
             return;
         }
 
+        var graphics = e.Graphics;
+        graphics.PageUnit = GraphicsUnit.Millimeter;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+
         var pageRectMm = new RectangleF(
             0,
             0,
@@ -59,21 +65,11 @@ public sealed class PrintJob
             }
 
             var labelData = _pending.Dequeue();
-            var state = e.Graphics.Save();
-            var origin = MmPointToPixels(slot.Location, e.Graphics);
-            e.Graphics.TranslateTransform(origin.X, origin.Y);
-            _renderer.DrawLabel(e.Graphics, _layout, labelData);
-            e.Graphics.Restore(state);
+            _renderer.DrawLabel(graphics, slot, _layout, labelData);
         }
 
         e.HasMorePages = _pending.Count > 0;
     }
-
-    private static PointF MmPointToPixels(PointF pointMm, Graphics graphics) => new(
-        MmToPixels(pointMm.X, graphics.DpiX),
-        MmToPixels(pointMm.Y, graphics.DpiY));
-
-    private static float MmToPixels(float mm, float dpi) => mm / 25.4f * dpi;
 
     private static float HundredthsInchToMm(float hundredths) => hundredths / 100f * 25.4f;
 }
