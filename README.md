@@ -23,7 +23,7 @@ Deterministic GS1 DataMatrix label renderer with fixed physical dimensions and m
 
 ## Default layout
 
-`DefaultLayouts.Gs1DataMatrixLabel` describes a 25×20 mm label with a 16×16 mm DataMatrix and a vertical text block. Adjust the geometry by editing this class; all rendering stays millimeter-accurate.
+`DefaultLayouts.Gs1DataMatrixLabel` describes a 25×20 mm label with a centered 14×14 mm DataMatrix and a text block beneath it. Adjust the geometry by editing this class; all rendering stays millimeter-accurate.
 
 ## Dependencies
 
