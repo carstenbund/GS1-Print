@@ -11,6 +11,6 @@ public static class DefaultLayouts
     public static LabelLayout Gs1DataMatrixLabel { get; } = new(
         widthMm: 25f,
         heightMm: 20f,
-        barcodeRectMm: new RectangleF(5.5f, 1.5f, 14f, 14f),
-        textRectMm: new RectangleF(1.5f, 15.5f, 22f, 4.5f));
+        barcodeRectMm: new RectangleF(5.5f, 1.5f, 14f, 11.5f),
+        textRectMm: new RectangleF(1.5f, 13f, 22f, 7f));
 }

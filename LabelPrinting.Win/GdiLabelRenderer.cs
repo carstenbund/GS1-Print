@@ -35,7 +35,7 @@ public sealed class GdiLabelRenderer
             layout.TextRectMm.Width,
             layout.TextRectMm.Height);
 
-        using var font = new Font("Arial", 5.5f, FontStyle.Regular, GraphicsUnit.Point);
+        using var font = new Font("Arial", 6.5f, FontStyle.Regular, GraphicsUnit.Point);
         using var format = new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Near };
         var humanReadable = BuildHumanReadable(data);
         graphics.DrawString(humanReadable, font, Brushes.Black, textRect, format);
