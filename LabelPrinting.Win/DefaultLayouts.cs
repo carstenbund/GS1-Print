@@ -6,11 +6,11 @@ namespace LabelPrinting.Win;
 public static class DefaultLayouts
 {
     /// <summary>
-    /// Baseline 25x20mm label with square DataMatrix and stacked text.
+    /// Baseline 25x20mm label with a centered DataMatrix and text underneath.
     /// </summary>
     public static LabelLayout Gs1DataMatrixLabel { get; } = new(
         widthMm: 25f,
         heightMm: 20f,
-        barcodeRectMm: new RectangleF(1.5f, 1.5f, 16f, 16f),
-        textRectMm: new RectangleF(18f, 1.5f, 5.5f, 16f));
+        barcodeRectMm: new RectangleF(5.5f, 1.5f, 14f, 14f),
+        textRectMm: new RectangleF(1.5f, 15.5f, 22f, 4.5f));
 }
