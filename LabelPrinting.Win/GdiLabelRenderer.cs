@@ -43,7 +43,7 @@ public sealed class GdiLabelRenderer
             layout.TextRectMm.Width,
             layout.TextRectMm.Height);
 
-        using var font = new Font("Arial", 6.5f, FontStyle.Regular, GraphicsUnit.Point);
+        using var font = new Font("Arial", 5f, FontStyle.Regular, GraphicsUnit.Point);
         using var format = new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Near };
         var humanReadable = BuildHumanReadable(data);
         graphics.DrawString(humanReadable, font, Brushes.Black, textRect, format);
@@ -59,14 +59,10 @@ public sealed class GdiLabelRenderer
         var lines = new List<string>
         {
             $"(01) {data.Gtin}",
+            $"(17) {data.Expiry:yyMMdd}",
             $"(10) {data.Lot}",
-            $"(17) {data.Expiry:yyMMdd}"
+            $"EXP  {data.Expiry:yyMMdd}"
         };
-
-        if (data.Manufacture is { } mfg)
-        {
-            lines.Add($"(11) {mfg:yyMMdd}");
-        }
 
         return string.Join(Environment.NewLine, lines);
     }

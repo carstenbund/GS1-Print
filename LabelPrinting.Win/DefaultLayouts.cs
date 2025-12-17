@@ -13,7 +13,7 @@ public static class DefaultLayouts
     private static readonly LabelLayout DefaultGs1DataMatrixLayout = new(
         widthMm: 25f,
         heightMm: 20f,
-        barcodeRectMm: new RectangleF(5.5f, 1.5f, 10f, 10f),
+        barcodeRectMm: new RectangleF(5.5f, 1.5f, 8f, 8f),
         textRectMm: new RectangleF(1.5f, 13f, 22f, 7f));
 
     /// <summary>
