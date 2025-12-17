@@ -59,10 +59,11 @@ public sealed class PrintJob
             }
 
             var labelData = _pending.Dequeue();
-            using var state = e.Graphics.Save();
+            var state = e.Graphics.Save();
             var origin = MmPointToPixels(slot.Location, e.Graphics);
             e.Graphics.TranslateTransform(origin.X, origin.Y);
             _renderer.DrawLabel(e.Graphics, _layout, labelData);
+            e.Graphics.Restore(state);
         }
 
         e.HasMorePages = _pending.Count > 0;
