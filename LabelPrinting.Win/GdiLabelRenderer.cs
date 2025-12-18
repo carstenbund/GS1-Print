@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using LabelPrinting.Core;
 using ZXing;
 using ZXing.Common;
@@ -26,8 +28,8 @@ public sealed class GdiLabelRenderer
         if (layout is null) throw new ArgumentNullException(nameof(layout));
         if (data is null) throw new ArgumentNullException(nameof(data));
 
-        var payload = Gs1PayloadBuilder.Build(data);
-        using var barcodeBitmap = CreateBarcodeBitmap(payload);
+        var barcodePayload = Gs1ZxingPayloadBuilder.Build(data);
+        using var barcodeBitmap = CreateBarcodeBitmap(barcodePayload);
 
         var barcodeRect = new RectangleF(
             slotMm.X + layout.BarcodeRectMm.X,
@@ -68,14 +70,45 @@ public sealed class GdiLabelRenderer
     /// <returns>A tuple containing regular AI lines with prefixes (01), (17), (10) and a bold expiry line prefixed with "EXP".</returns>
     private static (IReadOnlyList<string> Lines, string ExpiryLine) BuildHumanReadable(LabelData data)
     {
-        var lines = new List<string>
-        {
-            $"(01) {data.Gtin}",
-            $"(17) {data.Expiry:yyMMdd}",
-            $"(10) {data.Lot}"
-        };
+        var humanReadable = Gs1HumanReadableBuilder.Build(data);
+        var lines = SplitHumanReadableLines(humanReadable);
+        var expiryValue = data.Expiry.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
-        return (lines, $"EXP  {data.Expiry:yyMMdd}");
+        return (lines, $"EXP  {expiryValue}");
+    }
+
+    private static IReadOnlyList<string> SplitHumanReadableLines(string humanReadable)
+    {
+        var lines = new List<string>();
+        var index = 0;
+
+        while (index < humanReadable.Length)
+        {
+            var startAi = humanReadable.IndexOf('(', index);
+            if (startAi < 0 || startAi + 1 >= humanReadable.Length)
+            {
+                break;
+            }
+
+            var endAi = humanReadable.IndexOf(')', startAi + 1);
+            if (endAi < 0)
+            {
+                break;
+            }
+
+            var ai = humanReadable.Substring(startAi, endAi - startAi + 1);
+            var valueStart = endAi + 1;
+            var nextAi = humanReadable.IndexOf('(', valueStart);
+            var value = (nextAi >= 0
+                    ? humanReadable.Substring(valueStart, nextAi - valueStart)
+                    : humanReadable.Substring(valueStart))
+                .Trim();
+
+            lines.Add($"{ai} {value}");
+            index = nextAi >= 0 ? nextAi : humanReadable.Length;
+        }
+
+        return lines;
     }
 
     /// <summary>
