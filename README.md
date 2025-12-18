@@ -10,7 +10,7 @@ Deterministic GS1 DataMatrix label renderer with fixed physical dimensions and m
 ## Execution flow
 
 1. `Program` launches `PrintShellForm`.
-2. The form prompts for a CSV file, reads it via `CsvLabelSource`, and opens the printer dialog.
+2. The form prompts for a CSV or Excel file, reads it via `CsvLabelSource`, and opens the printer dialog.
 3. `PrintJob` paginates in millimeters with `PageComposer` and delegates each slot to `GdiLabelRenderer`.
 4. `GdiLabelRenderer` turns the GS1 payload from `Gs1PayloadBuilder` into a DataMatrix using ZXing and paints human-readable lines alongside it using the coordinates from `LabelLayout`.
 
@@ -30,3 +30,4 @@ Deterministic GS1 DataMatrix label renderer with fixed physical dimensions and m
 - .NET 8 Windows Forms
 - ZXing.Net for GS1 DataMatrix generation
 - System.Drawing.Common for GDI+ rendering
+- ExcelDataReader for Excel ingestion (xlsx/xls)
