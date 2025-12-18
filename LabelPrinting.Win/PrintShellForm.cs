@@ -45,7 +45,7 @@ public sealed class PrintShellForm : Form
             var labels = LoadLabels();
             if (labels.Count == 0)
             {
-                MessageBox.Show(this, "No labels found in the selected CSV.", "Empty input", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "No labels found in the selected file.", "Empty input", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
                 return;
             }

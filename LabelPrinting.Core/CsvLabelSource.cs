@@ -126,20 +126,44 @@ public sealed class CsvLabelSource : ILabelSource
         if (!dict.TryGetValue("lot", out var lot)) return false;
         if (!dict.TryGetValue("expiry", out var expiryRaw)) return false;
 
-        if (!DateTime.TryParseExact(expiryRaw, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var expiry))
+        if (!TryParseDate(expiryRaw, out var expiry))
         {
             return false;
         }
 
         DateTime? manufacture = null;
         if (dict.TryGetValue("manufacture", out var mfgRaw) &&
-            DateTime.TryParseExact(mfgRaw, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var mfgDate))
+            TryParseDate(mfgRaw, out var mfgDate))
         {
             manufacture = mfgDate;
         }
 
         label = new LabelData(gtin, lot, expiry, manufacture);
         return true;
+    }
+
+    private static bool TryParseDate(string value, out DateTime date)
+    {
+        const string isoFormat = "yyyy-MM-dd";
+        if (DateTime.TryParseExact(value, isoFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+        {
+            return true;
+        }
+
+        if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var oaDate))
+        {
+            try
+            {
+                date = DateTime.FromOADate(oaDate);
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                // fall through to general parsing
+            }
+        }
+
+        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out date);
     }
 
     private static bool IsExcelExtension(string extension)
