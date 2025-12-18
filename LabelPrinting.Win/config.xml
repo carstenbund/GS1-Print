@@ -5,8 +5,11 @@
   the application.
 -->
 <LabelLayouts>
-  <!-- Margin between labels in millimeters. Must be zero or positive. -->
-  <MarginMm>1</MarginMm>
+  <!-- Physical inset from the paper edge to where labels start. Applied once per page. -->
+  <PageInsetMm>5</PageInsetMm>
+
+  <!-- Spacing between labels in millimeters. Must be zero or positive. -->
+  <LabelMarginMm>1</LabelMarginMm>
 
   <!-- Baseline 25x20 mm label with a centered DataMatrix and text underneath. -->
   <Gs1DataMatrixLabel>

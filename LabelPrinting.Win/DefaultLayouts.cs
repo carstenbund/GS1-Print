@@ -10,6 +10,7 @@ namespace LabelPrinting.Win;
 public static class DefaultLayouts
 {
     private const string ConfigFileName = "config.xml";
+    private const float DefaultPageInsetMm = 5f;
     private const float DefaultMarginMm = 1f;
 
     private static readonly LabelLayout DefaultGs1DataMatrixLayout = new(
@@ -28,6 +29,11 @@ public static class DefaultLayouts
     /// Margin between labels, read from <see cref="ConfigFileName"/> so spacing can be tuned without recompiling.
     /// </summary>
     public static float LabelMarginMm { get; } = LoadMargin();
+
+    /// <summary>
+    /// Inset applied once per page to keep content away from physical paper edges.
+    /// </summary>
+    public static float PageInsetMm { get; } = LoadPageInset();
 
     private static LabelLayout LoadGs1DataMatrixLabel()
     {
@@ -61,7 +67,7 @@ public static class DefaultLayouts
         try
         {
             var doc = XDocument.Load(path);
-            var marginElement = doc.Root?.Element("MarginMm");
+            var marginElement = doc.Root?.Element("LabelMarginMm") ?? doc.Root?.Element("MarginMm");
             return marginElement is not null
                 && float.TryParse(marginElement.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var marginMm)
                 ? Math.Max(0, marginMm)
@@ -70,6 +76,26 @@ public static class DefaultLayouts
         catch
         {
             return DefaultMarginMm;
+        }
+    }
+
+    private static float LoadPageInset()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, ConfigFileName);
+        if (!File.Exists(path)) return DefaultPageInsetMm;
+
+        try
+        {
+            var doc = XDocument.Load(path);
+            var insetElement = doc.Root?.Element("PageInsetMm");
+            return insetElement is not null
+                && float.TryParse(insetElement.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var insetMm)
+                ? Math.Max(0, insetMm)
+                : DefaultPageInsetMm;
+        }
+        catch
+        {
+            return DefaultPageInsetMm;
         }
     }
 
