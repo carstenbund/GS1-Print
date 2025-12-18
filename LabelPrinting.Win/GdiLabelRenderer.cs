@@ -44,27 +44,38 @@ public sealed class GdiLabelRenderer
             layout.TextRectMm.Height);
 
         using var font = new Font("Arial", 5f, FontStyle.Regular, GraphicsUnit.Point);
+        using var boldFont = new Font("Arial", 5f, FontStyle.Bold, GraphicsUnit.Point);
         using var format = new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Near };
-        var humanReadable = BuildHumanReadable(data);
-        graphics.DrawString(humanReadable, font, Brushes.Black, textRect, format);
+        var (humanReadableLines, expiryLine) = BuildHumanReadable(data);
+
+        var lineHeight = font.GetHeight(graphics);
+        var boldLineHeight = boldFont.GetHeight(graphics);
+        var y = textRect.Top;
+
+        foreach (var line in humanReadableLines)
+        {
+            graphics.DrawString(line, font, Brushes.Black, new RectangleF(textRect.Left, y, textRect.Width, lineHeight), format);
+            y += lineHeight;
+        }
+
+        graphics.DrawString(expiryLine, boldFont, Brushes.Black, new RectangleF(textRect.Left, y, textRect.Width, boldLineHeight), format);
     }
 
     /// <summary>
-    /// Builds a human-readable text representation of the label data with GS1 Application Identifiers.
+    /// Builds human-readable text representations of the label data with GS1 Application Identifiers.
     /// </summary>
     /// <param name="data">The label data to format.</param>
-    /// <returns>A multi-line string with AI prefixes: (01) for GTIN, (10) for lot, (17) for expiry, and (11) for manufacture if present.</returns>
-    private static string BuildHumanReadable(LabelData data)
+    /// <returns>A tuple containing regular AI lines with prefixes (01), (17), (10) and a bold expiry line prefixed with "EXP".</returns>
+    private static (IReadOnlyList<string> Lines, string ExpiryLine) BuildHumanReadable(LabelData data)
     {
         var lines = new List<string>
         {
             $"(01) {data.Gtin}",
             $"(17) {data.Expiry:yyMMdd}",
-            $"(10) {data.Lot}",
-            $"EXP  {data.Expiry:yyMMdd}"
+            $"(10) {data.Lot}"
         };
 
-        return string.Join(Environment.NewLine, lines);
+        return (lines, $"EXP  {data.Expiry:yyMMdd}");
     }
 
     /// <summary>
