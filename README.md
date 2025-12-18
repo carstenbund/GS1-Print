@@ -13,6 +13,7 @@ Deterministic GS1 DataMatrix label renderer with fixed physical dimensions and m
 2. The form prompts for a CSV or Excel file, reads it via `CsvLabelSource`, and opens the printer dialog.
 3. `PrintJob` paginates in millimeters with `PageComposer` and delegates each slot to `GdiLabelRenderer`.
 4. `GdiLabelRenderer` turns the GS1 payload from `Gs1PayloadBuilder` into a DataMatrix using ZXing and paints human-readable lines alongside it using the coordinates from `LabelLayout`.
+5. Printing is offset to the printer's reported margins so label geometry is composed within the actual printable area and avoids clipping.
 
 ## Core concepts
 
