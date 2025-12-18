@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using ExcelDataReader;
 
 namespace LabelPrinting.Core;
@@ -12,6 +13,20 @@ public sealed class CsvLabelSource : ILabelSource
 {
     private readonly string _path;
     private static bool _codePagesRegistered;
+    private static readonly string[] SupportedDateFormats =
+    {
+        "yyyy-MM-dd",
+        "yyyy-M-d",
+        "yyyy/MM/dd",
+        "yyyy/M/d",
+        "yyyyMMdd",
+        "yyyy-MM",
+        "yyyyMM",
+        "MM/dd/yyyy",
+        "M/d/yyyy",
+        "dd/MM/yyyy",
+        "d/M/yyyy",
+    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CsvLabelSource"/> class.
@@ -60,13 +75,17 @@ public sealed class CsvLabelSource : ILabelSource
             yield break;
         }
 
-        var columns = header.Split(',').Select(h => h.Trim().ToLowerInvariant()).ToArray();
+        var delimiter = DetectDelimiter(header);
+        var columns = ParseDelimitedLine(header, delimiter)
+            .Select(h => h.Trim().ToLowerInvariant())
+            .ToArray();
         while (!reader.EndOfStream)
         {
             var line = reader.ReadLine();
             if (string.IsNullOrWhiteSpace(line)) continue;
-            var cells = line.Split(',');
-            var values = cells.Select(c => c.Trim()).ToArray();
+            var values = ParseDelimitedLine(line, delimiter)
+                .Select(c => c.Trim())
+                .ToArray();
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < Math.Min(columns.Length, values.Length); i++)
             {
@@ -78,6 +97,53 @@ public sealed class CsvLabelSource : ILabelSource
                 yield return label!;
             }
         }
+    }
+
+    private static char DetectDelimiter(string header)
+    {
+        var delimiters = new[] { ',', ';', '\t', '|' };
+        var best = delimiters
+            .Select(d => new { Delimiter = d, Count = header.Count(c => c == d) })
+            .OrderByDescending(x => x.Count)
+            .FirstOrDefault(x => x.Count > 0);
+
+        return best?.Delimiter ?? ',';
+    }
+
+    private static string[] ParseDelimitedLine(string line, char delimiter)
+    {
+        var values = new List<string>();
+        var builder = new StringBuilder();
+        var inQuotes = false;
+
+        for (var i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                {
+                    builder.Append('"');
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if (c == delimiter && !inQuotes)
+            {
+                values.Add(builder.ToString().Trim());
+                builder.Clear();
+            }
+            else
+            {
+                builder.Append(c);
+            }
+        }
+
+        values.Add(builder.ToString().Trim());
+        return values.ToArray();
     }
 
     private IEnumerable<LabelData> ReadExcel()
@@ -144,8 +210,24 @@ public sealed class CsvLabelSource : ILabelSource
 
     private static bool TryParseDate(string value, out DateTime date)
     {
-        const string isoFormat = "yyyy-MM-dd";
-        if (DateTime.TryParseExact(value, isoFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+        value = value.Trim();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            date = default;
+            return false;
+        }
+
+        var zeroDayMatch = Regex.Match(value, @"^(?<year>\d{4})-(?<month>\d{2})-00$");
+        if (zeroDayMatch.Success
+            && int.TryParse(zeroDayMatch.Groups["year"].Value, out var year)
+            && int.TryParse(zeroDayMatch.Groups["month"].Value, out var month)
+            && month is >= 1 and <= 12)
+        {
+            date = new DateTime(year, month, 1);
+            return true;
+        }
+
+        if (DateTime.TryParseExact(value, SupportedDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
         {
             return true;
         }
