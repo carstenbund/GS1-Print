@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Label geometry is defined in millimeters. Update the values below to change the
+  physical size and positioning of the GS1 DataMatrix label without recompiling
+  the application.
+-->
+<LabelLayouts>
+  <!-- Baseline 25x20 mm label with a centered DataMatrix and text underneath. -->
+  <Gs1DataMatrixLabel>
+    <!-- Total label width in millimeters. -->
+    <WidthMm>25</WidthMm>
+    <!-- Total label height in millimeters. -->
+    <HeightMm>20</HeightMm>
+    <!-- DataMatrix rectangle: X offset, Y offset, width, height (all millimeters). -->
+    <BarcodeRectMm x="5.5" y="1.5" width="10" height="10" />
+    <!-- Text rectangle: X offset, Y offset, width, height (all millimeters). -->
+    <TextRectMm x="1.5" y="13" width="22" height="7" />
+  </Gs1DataMatrixLabel>
+</LabelLayouts>
