@@ -1,55 +1,106 @@
+using System;
 using System.Globalization;
 using System.Text;
 
-namespace LabelPrinting.Core;
-
-/// <summary>
-/// Builds GS1 AI payload strings without binding to any rendering concerns.
-/// </summary>
-public static class Gs1PayloadBuilder
+namespace LabelPrinting.Core
 {
-    /// <summary>
-    /// Compose the GS1 string for a DataMatrix symbol using standard AIs.
-    /// </summary>
-    /// <param name="data">The label data containing GTIN, lot, expiry, and optional manufacture date.</param>
-    /// <returns>A GS1 formatted string with AI (01) for GTIN, (17) for expiry, (11) for manufacture (if present), and (10) for lot number.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when data is null.</exception>
-    public static string Build(LabelData data)
-    {
-        if (data is null) throw new ArgumentNullException(nameof(data));
+    // =========================
+    // Data model
+    // =========================
 
-        var builder = new StringBuilder();
-        builder.Append("(01)");
-        builder.Append(PadGtin(data.Gtin));
-        builder.Append("(17)");
-        builder.Append(FormatDate(data.Expiry));
-        if (data.Manufacture is { } mfg)
+    public sealed class LabelData
+    {
+        public string Gtin { get; init; } = string.Empty;
+        public DateTime Expiry { get; init; }
+        public DateTime? Manufacture { get; init; }
+        public string Lot { get; init; } = string.Empty;
+    }
+
+    // =========================
+    // Internal GS1 formatting helpers
+    // =========================
+
+    internal static class Gs1Formatting
+    {
+        internal static string PadGtin(string gtin)
         {
-            builder.Append("(11)");
-            builder.Append(FormatDate(mfg));
+            const int length = 14;
+            return gtin.Trim().PadLeft(length, '0');
         }
 
-        builder.Append("(10)");
-        builder.Append(data.Lot);
-        return builder.ToString();
+        /// <summary>
+        /// GS1 machine date format (mandatory for DataMatrix payloads)
+        /// </summary>
+        internal static string FormatGs1Date(DateTime value) =>
+            value.ToString("yyMMdd", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Human-readable expiry date format for labels / UI
+        /// </summary>
+        internal static string FormatHumanExpiry(DateTime value) =>
+            value.ToString("yyyy-MM", CultureInfo.InvariantCulture);
     }
 
-    /// <summary>
-    /// Pads the GTIN to 14 digits by left-padding with zeros.
-    /// </summary>
-    /// <param name="gtin">The GTIN string to pad.</param>
-    /// <returns>A 14-character GTIN string, left-padded with zeros if necessary.</returns>
-    private static string PadGtin(string gtin)
+    // =========================
+    // Human-readable GS1 builder
+    // =========================
+
+    public static class Gs1HumanReadableBuilder
     {
-        const int length = 14;
-        var digitsOnly = gtin.Trim();
-        return digitsOnly.PadLeft(length, '0');
+        public static string Build(LabelData data)
+        {
+            if (data is null) throw new ArgumentNullException(nameof(data));
+
+            var sb = new StringBuilder();
+
+            sb.Append("(01)");
+            sb.Append(Gs1Formatting.PadGtin(data.Gtin));
+
+            sb.Append("(17)");
+            sb.Append(Gs1Formatting.FormatHumanExpiry(data.Expiry));
+
+            if (data.Manufacture is { } mfg)
+            {
+                sb.Append("(11)");
+                sb.Append(Gs1Formatting.FormatGs1Date(mfg));
+            }
+
+            sb.Append("(10)");
+            sb.Append(data.Lot);
+
+            return sb.ToString();
+        }
     }
 
-    /// <summary>
-    /// Formats a date to GS1 standard format (yyMMdd).
-    /// </summary>
-    /// <param name="value">The date value to format.</param>
-    /// <returns>A string in yyMMdd format using invariant culture.</returns>
-    private static string FormatDate(DateTime value) => value.ToString("yyMMdd", CultureInfo.InvariantCulture);
+    // =========================
+    // ZXing / DataMatrix payload builder
+    // =========================
+
+    public static class Gs1ZxingPayloadBuilder
+    {
+        private const char GS = '\x1D'; // ASCII 29 (Group Separator / FNC1)
+
+        public static string Build(LabelData data)
+        {
+            if (data is null) throw new ArgumentNullException(nameof(data));
+
+            var sb = new StringBuilder();
+
+            // Explicit GS for ZXing compatibility (as proven in your environment)
+            sb.Append(GS);
+
+            sb.Append("01").Append(Gs1Formatting.PadGtin(data.Gtin));
+            sb.Append("17").Append(Gs1Formatting.FormatGs1Date(data.Expiry));
+            sb.Append("10").Append(data.Lot);
+
+            // Terminate variable-length AI (10) if another AI follows
+            if (data.Manufacture is { } mfg)
+            {
+                sb.Append(GS);
+                sb.Append("11").Append(Gs1Formatting.FormatGs1Date(mfg));
+            }
+
+            return sb.ToString();
+        }
+    }
 }
