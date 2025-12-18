@@ -12,14 +12,14 @@ Deterministic GS1 DataMatrix label renderer with fixed physical dimensions and m
 1. `Program` launches `PrintShellForm`.
 2. The form prompts for a CSV or Excel file, reads it via `CsvLabelSource`, and opens the printer dialog.
 3. `PrintJob` paginates in millimeters with `PageComposer` and delegates each slot to `GdiLabelRenderer`.
-4. `GdiLabelRenderer` turns the GS1 payload from `Gs1PayloadBuilder` into a DataMatrix using ZXing and paints human-readable lines alongside it using the coordinates from `LabelLayout`.
+4. `GdiLabelRenderer` builds two GS1 strings per label: `Gs1ZxingPayloadBuilder` feeds the DataMatrix encoder, while `Gs1HumanReadableBuilder` supplies the on-label text drawn using coordinates from `LabelLayout`.
 5. Printing is offset to the printer's reported margins so label geometry is composed within the actual printable area and avoids clipping.
 
 ## Core concepts
 
 - **LabelData** – immutable semantic payload (GTIN, lot, expiry, optional manufacture date).
 - **LabelLayout** – single source of truth for physical dimensions expressed in millimeters.
-- **Gs1PayloadBuilder** – AI-aware string composer; no rendering concerns.
+- **Gs1ZxingPayloadBuilder / Gs1HumanReadableBuilder** – AI-aware string composers; no rendering concerns.
 - **CsvLabelSource** – header-driven CSV reader (Gtin, Lot, Expiry, Manufacture columns; dates as `yyyy-MM-dd`).
 
 ## Default layout
