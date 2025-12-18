@@ -5,18 +5,6 @@ using System.Text;
 namespace LabelPrinting.Core
 {
     // =========================
-    // Data model
-    // =========================
-
-    public sealed class LabelData
-    {
-        public string Gtin { get; init; } = string.Empty;
-        public DateTime Expiry { get; init; }
-        public DateTime? Manufacture { get; init; }
-        public string Lot { get; init; } = string.Empty;
-    }
-
-    // =========================
     // Internal GS1 formatting helpers
     // =========================
 
