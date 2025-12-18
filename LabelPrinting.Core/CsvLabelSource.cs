@@ -122,9 +122,9 @@ public sealed class CsvLabelSource : ILabelSource
     private static bool TryCreateLabel(Dictionary<string, string> dict, out LabelData? label)
     {
         label = null;
-        if (!dict.TryGetValue("gtin", out var gtin)) return false;
-        if (!dict.TryGetValue("lot", out var lot)) return false;
-        if (!dict.TryGetValue("expiry", out var expiryRaw)) return false;
+        if (!TryGetValue(dict, out var gtin, "gtin")) return false;
+        if (!TryGetValue(dict, out var lot, "lot")) return false;
+        if (!TryGetValue(dict, out var expiryRaw, "expiry", "exp")) return false;
 
         if (!TryParseDate(expiryRaw, out var expiry))
         {
@@ -132,7 +132,7 @@ public sealed class CsvLabelSource : ILabelSource
         }
 
         DateTime? manufacture = null;
-        if (dict.TryGetValue("manufacture", out var mfgRaw) &&
+        if (TryGetValue(dict, out var mfgRaw, "manufacture", "mfg") &&
             TryParseDate(mfgRaw, out var mfgDate))
         {
             manufacture = mfgDate;
@@ -170,6 +170,20 @@ public sealed class CsvLabelSource : ILabelSource
     {
         return string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase)
                || string.Equals(extension, ".xls", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetValue(Dictionary<string, string> dict, out string value, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            if (dict.TryGetValue(key, out value!))
+            {
+                return true;
+            }
+        }
+
+        value = string.Empty;
+        return false;
     }
 
     private static void RegisterCodePagesIfNeeded()
