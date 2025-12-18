@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -9,6 +10,7 @@ namespace LabelPrinting.Win;
 public static class DefaultLayouts
 {
     private const string ConfigFileName = "config.xml";
+    private const float DefaultMarginMm = 1f;
 
     private static readonly LabelLayout DefaultGs1DataMatrixLayout = new(
         widthMm: 25f,
@@ -21,6 +23,11 @@ public static class DefaultLayouts
     /// Values can be overridden via <see cref="ConfigFileName"/> in the app folder.
     /// </summary>
     public static LabelLayout Gs1DataMatrixLabel { get; } = LoadGs1DataMatrixLabel();
+
+    /// <summary>
+    /// Margin between labels, read from <see cref="ConfigFileName"/> so spacing can be tuned without recompiling.
+    /// </summary>
+    public static float LabelMarginMm { get; } = LoadMargin();
 
     private static LabelLayout LoadGs1DataMatrixLabel()
     {
@@ -43,6 +50,26 @@ public static class DefaultLayouts
         catch
         {
             return DefaultGs1DataMatrixLayout;
+        }
+    }
+
+    private static float LoadMargin()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, ConfigFileName);
+        if (!File.Exists(path)) return DefaultMarginMm;
+
+        try
+        {
+            var doc = XDocument.Load(path);
+            var marginElement = doc.Root?.Element("MarginMm");
+            return marginElement is not null
+                && float.TryParse(marginElement.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var marginMm)
+                ? Math.Max(0, marginMm)
+                : DefaultMarginMm;
+        }
+        catch
+        {
+            return DefaultMarginMm;
         }
     }
 

@@ -10,7 +10,7 @@ namespace LabelPrinting.Win;
 public sealed class PrintShellForm : Form
 {
     private readonly GdiLabelRenderer _renderer = new();
-    private readonly PageComposer _composer = new(marginMm: 1f);
+    private readonly PageComposer _composer = new(DefaultLayouts.LabelMarginMm); // margin now configurable via config.xml
     private readonly LabelLayout _layout = DefaultLayouts.Gs1DataMatrixLabel;
 
     /// <summary>

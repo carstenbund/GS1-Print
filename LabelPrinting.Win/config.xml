@@ -5,6 +5,9 @@
   the application.
 -->
 <LabelLayouts>
+  <!-- Margin between labels in millimeters. Must be zero or positive. -->
+  <MarginMm>1</MarginMm>
+
   <!-- Baseline 25x20 mm label with a centered DataMatrix and text underneath. -->
   <Gs1DataMatrixLabel>
     <!-- Total label width in millimeters. -->
