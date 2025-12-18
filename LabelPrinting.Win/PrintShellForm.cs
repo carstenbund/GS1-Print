@@ -45,7 +45,7 @@ public sealed class PrintShellForm : Form
             var labels = LoadLabels();
             if (labels.Count == 0)
             {
-                MessageBox.Show(this, "No labels found in the selected CSV.", "Empty input", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "No labels found in the selected file.", "Empty input", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
                 return;
             }
@@ -67,15 +67,15 @@ public sealed class PrintShellForm : Form
     }
 
     /// <summary>
-    /// Displays a file dialog for the user to select a CSV file and loads label data from it.
+    /// Displays a file dialog for the user to select a CSV or Excel file and loads label data from it.
     /// </summary>
     /// <returns>A list of <see cref="LabelData"/> objects loaded from the selected CSV file, or an empty list if user cancels.</returns>
     private List<LabelData> LoadLabels()
     {
         using var dialog = new OpenFileDialog
         {
-            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
-            Title = "Select label batch CSV"
+            Filter = "Label data (*.csv;*.xlsx;*.xls)|*.csv;*.xlsx;*.xls|CSV files (*.csv)|*.csv|Excel files (*.xlsx;*.xls)|*.xlsx;*.xls|All files (*.*)|*.*",
+            Title = "Select label batch file"
         };
 
         return dialog.ShowDialog(this) == DialogResult.OK
