@@ -10,11 +10,21 @@ public sealed class PageComposer
 {
     private readonly float _marginMm;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PageComposer"/> class.
+    /// </summary>
+    /// <param name="marginMm">The margin spacing in millimeters between labels. Defaults to 2mm. Negative values are clamped to 0.</param>
     public PageComposer(float marginMm = 2f)
     {
         _marginMm = Math.Max(0, marginMm);
     }
 
+    /// <summary>
+    /// Calculates the positions where labels can be placed on a page, arranged in a grid.
+    /// </summary>
+    /// <param name="pageRectMm">The page dimensions in millimeters.</param>
+    /// <param name="layout">The layout defining label size.</param>
+    /// <returns>A read-only list of rectangles in millimeters, each representing a label slot position on the page. Labels are arranged in up to 2 columns, centered horizontally.</returns>
     public IReadOnlyList<RectangleF> GetLabelSlots(RectangleF pageRectMm, LabelLayout layout)
     {
         var slots = new List<RectangleF>();

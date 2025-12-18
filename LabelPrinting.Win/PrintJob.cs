@@ -14,6 +14,13 @@ public sealed class PrintJob
     private readonly GdiLabelRenderer _renderer;
     private Queue<LabelData>? _pending;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PrintJob"/> class.
+    /// </summary>
+    /// <param name="layout">The label layout to use for positioning elements on each label.</param>
+    /// <param name="composer">The page composer that calculates label positions on the page.</param>
+    /// <param name="renderer">The renderer that draws individual labels.</param>
+    /// <exception cref="ArgumentNullException">Thrown when layout, composer, or renderer is null.</exception>
     public PrintJob(LabelLayout layout, PageComposer composer, GdiLabelRenderer renderer)
     {
         _layout = layout ?? throw new ArgumentNullException(nameof(layout));
@@ -21,6 +28,12 @@ public sealed class PrintJob
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
     }
 
+    /// <summary>
+    /// Sends the collection of labels to the printer, flowing across multiple pages as needed.
+    /// </summary>
+    /// <param name="labels">The enumerable collection of label data to print.</param>
+    /// <param name="printerSettings">The printer settings specifying which printer to use and print options.</param>
+    /// <exception cref="ArgumentNullException">Thrown when labels or printerSettings is null.</exception>
     public void Print(IEnumerable<LabelData> labels, PrinterSettings printerSettings)
     {
         if (labels is null) throw new ArgumentNullException(nameof(labels));
@@ -36,6 +49,11 @@ public sealed class PrintJob
         document.Print();
     }
 
+    /// <summary>
+    /// Handles the PrintPage event, rendering as many labels as fit on the current page.
+    /// </summary>
+    /// <param name="sender">The event sender (PrintDocument).</param>
+    /// <param name="e">Event arguments providing the graphics surface and page bounds.</param>
     private void OnPrintPage(object? sender, PrintPageEventArgs e)
     {
         if (_pending is null)
@@ -71,5 +89,10 @@ public sealed class PrintJob
         e.HasMorePages = _pending.Count > 0;
     }
 
+    /// <summary>
+    /// Converts a measurement from hundredths of an inch to millimeters.
+    /// </summary>
+    /// <param name="hundredths">The value in hundredths of an inch (GDI+ default page unit).</param>
+    /// <returns>The equivalent value in millimeters.</returns>
     private static float HundredthsInchToMm(float hundredths) => hundredths / 100f * 25.4f;
 }

@@ -11,12 +11,25 @@ public sealed class CsvLabelSource : ILabelSource
 {
     private readonly string _path;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CsvLabelSource"/> class.
+    /// </summary>
+    /// <param name="path">The file system path to the CSV file containing label data.</param>
+    /// <exception cref="ArgumentException">Thrown when path is null, empty, or whitespace.</exception>
     public CsvLabelSource(string path)
     {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("CSV path is required", nameof(path));
         _path = path;
     }
 
+    /// <summary>
+    /// Reads and parses label data from the CSV file.
+    /// </summary>
+    /// <returns>An enumerable sequence of <see cref="LabelData"/> objects parsed from valid CSV rows.</returns>
+    /// <remarks>
+    /// Expects CSV columns: Gtin, Lot, Expiry (yyyy-MM-dd format), and optionally Manufacture (yyyy-MM-dd format).
+    /// Rows with missing required fields or invalid date formats are skipped.
+    /// </remarks>
     public IEnumerable<LabelData> Read()
     {
         using var reader = new StreamReader(_path, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);

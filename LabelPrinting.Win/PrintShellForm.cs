@@ -13,6 +13,9 @@ public sealed class PrintShellForm : Form
     private readonly PageComposer _composer = new(marginMm: 1f);
     private readonly LabelLayout _layout = DefaultLayouts.Gs1DataMatrixLabel;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PrintShellForm"/> class.
+    /// </summary>
     public PrintShellForm()
     {
         Text = "Label Printing";
@@ -21,11 +24,20 @@ public sealed class PrintShellForm : Form
         Shown += OnShown;
     }
 
+    /// <summary>
+    /// Handles the form's Shown event and initiates the printing workflow.
+    /// </summary>
+    /// <param name="sender">The event sender.</param>
+    /// <param name="e">The event arguments.</param>
     private void OnShown(object? sender, EventArgs e)
     {
         BeginInvoke(new MethodInvoker(RunWorkflow));
     }
 
+    /// <summary>
+    /// Executes the complete printing workflow: load labels, select printer, and print.
+    /// The form closes automatically when workflow completes or if user cancels.
+    /// </summary>
     private void RunWorkflow()
     {
         try
@@ -54,6 +66,10 @@ public sealed class PrintShellForm : Form
         }
     }
 
+    /// <summary>
+    /// Displays a file dialog for the user to select a CSV file and loads label data from it.
+    /// </summary>
+    /// <returns>A list of <see cref="LabelData"/> objects loaded from the selected CSV file, or an empty list if user cancels.</returns>
     private List<LabelData> LoadLabels()
     {
         using var dialog = new OpenFileDialog
@@ -67,6 +83,10 @@ public sealed class PrintShellForm : Form
             : new List<LabelData>();
     }
 
+    /// <summary>
+    /// Displays a printer selection dialog for the user to choose a printer.
+    /// </summary>
+    /// <returns>The selected <see cref="PrinterSettings"/>, or null if the user cancels the dialog.</returns>
     private PrinterSettings? SelectPrinter()
     {
         using var dialog = new PrintDialog { UseEXDialog = true };

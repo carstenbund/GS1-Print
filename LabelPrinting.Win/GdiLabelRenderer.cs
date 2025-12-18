@@ -12,6 +12,14 @@ namespace LabelPrinting.Win;
 /// </summary>
 public sealed class GdiLabelRenderer
 {
+    /// <summary>
+    /// Draws a complete label including DataMatrix barcode and human-readable text onto the specified graphics surface.
+    /// </summary>
+    /// <param name="graphics">The GDI+ Graphics object to draw on. Must have PageUnit set to Millimeter.</param>
+    /// <param name="slotMm">The rectangle in millimeters where the label should be drawn on the page.</param>
+    /// <param name="layout">The layout definition specifying barcode and text positions within the label.</param>
+    /// <param name="data">The label data to encode and render.</param>
+    /// <exception cref="ArgumentNullException">Thrown when graphics, layout, or data is null.</exception>
     public void DrawLabel(Graphics graphics, RectangleF slotMm, LabelLayout layout, LabelData data)
     {
         if (graphics is null) throw new ArgumentNullException(nameof(graphics));
@@ -41,6 +49,11 @@ public sealed class GdiLabelRenderer
         graphics.DrawString(humanReadable, font, Brushes.Black, textRect, format);
     }
 
+    /// <summary>
+    /// Builds a human-readable text representation of the label data with GS1 Application Identifiers.
+    /// </summary>
+    /// <param name="data">The label data to format.</param>
+    /// <returns>A multi-line string with AI prefixes: (01) for GTIN, (10) for lot, (17) for expiry, and (11) for manufacture if present.</returns>
     private static string BuildHumanReadable(LabelData data)
     {
         var lines = new List<string>
@@ -58,6 +71,11 @@ public sealed class GdiLabelRenderer
         return string.Join(Environment.NewLine, lines);
     }
 
+    /// <summary>
+    /// Creates a DataMatrix barcode bitmap from the given payload string.
+    /// </summary>
+    /// <param name="payload">The GS1 payload string to encode in the barcode.</param>
+    /// <returns>A 200x200 pixel Bitmap containing the DataMatrix barcode with no margins.</returns>
     private static Bitmap CreateBarcodeBitmap(string payload)
     {
         var encodingOptions = new EncodingOptions
