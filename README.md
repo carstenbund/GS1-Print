@@ -24,7 +24,7 @@ Deterministic GS1 DataMatrix label renderer with fixed physical dimensions and m
 
 ## Default layout
 
-`DefaultLayouts.Gs1DataMatrixLabel` describes a 25×20 mm label with a centered 14×14 mm DataMatrix and a text block beneath it. Adjust the geometry without recompiling by editing `LabelPrinting.Win/config.xml` (values are in millimeters and documented inline); the application falls back to the built-in defaults if the file is missing or invalid.
+`DefaultLayouts.Gs1DataMatrixLabel` describes a 25×20 mm label with a centered 14×14 mm DataMatrix and a text block beneath it. Adjust the geometry without recompiling by editing `LabelPrinting.Win/config.xml` (values are in millimeters and documented inline); the application falls back to the built-in defaults if the file is missing or invalid. The same file exposes `MarginMm` for tuning the spacing between labels when composing pages—set it to zero to pack labels with no gap.
 
 ## Dependencies
 
