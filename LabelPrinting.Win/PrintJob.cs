@@ -68,18 +68,17 @@ public sealed class PrintJob
         graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
         graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
-        // Respect the printer's margins by translating the drawing origin to the top-left margin corner
-        // and using the margin bounds as the printable area for slot composition.
-        var marginBounds = e.MarginBounds;
-        graphics.TranslateTransform(
-            HundredthsInchToMm(marginBounds.Left),
-            HundredthsInchToMm(marginBounds.Top));
+        var insetMm = DefaultLayouts.PageInsetMm;
+        var pageWidthMm = HundredthsInchToMm(e.PageBounds.Width);
+        var pageHeightMm = HundredthsInchToMm(e.PageBounds.Height);
+
+        graphics.TranslateTransform(insetMm, insetMm);
 
         var pageRectMm = new RectangleF(
             0,
             0,
-            HundredthsInchToMm(marginBounds.Width),
-            HundredthsInchToMm(marginBounds.Height));
+            pageWidthMm - insetMm * 2,
+            pageHeightMm - insetMm * 2);
 
         var slots = _composer.GetLabelSlots(pageRectMm, _layout);
         foreach (var slot in slots)
