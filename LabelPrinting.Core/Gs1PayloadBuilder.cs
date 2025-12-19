@@ -25,8 +25,14 @@ namespace LabelPrinting.Core
         /// <summary>
         /// Human-readable expiry date format for labels / UI
         /// </summary>
-        internal static string FormatHumanExpiry(DateTime value) =>
-            value.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        internal static string FormatHumanExpiry(DateTime value, bool isExpiryDayZero = false)
+        {
+            if (isExpiryDayZero)
+            {
+                return value.ToString("yyyy-MM", CultureInfo.InvariantCulture) + "-00";
+            }
+            return value.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        }
     }
 
     // =========================
@@ -45,7 +51,7 @@ namespace LabelPrinting.Core
             sb.Append(Gs1Formatting.PadGtin(data.Gtin));
 
             sb.Append("(17)");
-            sb.Append(Gs1Formatting.FormatHumanExpiry(data.Expiry));
+            sb.Append(Gs1Formatting.FormatHumanExpiry(data.Expiry, data.IsExpiryDayZero));
 
             if (data.Manufacture is { } mfg)
             {

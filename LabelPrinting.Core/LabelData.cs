@@ -12,8 +12,9 @@ public sealed class LabelData
     /// <param name="lot">The lot or batch number.</param>
     /// <param name="expiry">The expiry date of the product.</param>
     /// <param name="manufacture">The optional manufacture date of the product. Defaults to null if not provided.</param>
+    /// <param name="isExpiryDayZero">Indicates if the expiry date was originally specified with day "00" (meaning last day of month).</param>
     /// <exception cref="ArgumentException">Thrown when gtin or lot is null, empty, or whitespace.</exception>
-    public LabelData(string gtin, string lot, DateTime expiry, DateTime? manufacture = null)
+    public LabelData(string gtin, string lot, DateTime expiry, DateTime? manufacture = null, bool isExpiryDayZero = false)
     {
         if (string.IsNullOrWhiteSpace(gtin)) throw new ArgumentException("GTIN is required", nameof(gtin));
         if (string.IsNullOrWhiteSpace(lot)) throw new ArgumentException("Lot is required", nameof(lot));
@@ -22,6 +23,7 @@ public sealed class LabelData
         Lot = lot.Trim();
         Expiry = expiry.Date;
         Manufacture = manufacture?.Date;
+        IsExpiryDayZero = isExpiryDayZero;
     }
 
     public string Gtin { get; }
@@ -31,4 +33,11 @@ public sealed class LabelData
     public DateTime Expiry { get; }
 
     public DateTime? Manufacture { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the expiry date was originally specified with day "00",
+    /// meaning the last day of the month. When true, human-readable output should display "00"
+    /// while the barcode should use the actual last day of the month.
+    /// </summary>
+    public bool IsExpiryDayZero { get; }
 }
