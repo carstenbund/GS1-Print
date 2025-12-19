@@ -192,24 +192,25 @@ public sealed class CsvLabelSource : ILabelSource
         if (!TryGetValue(dict, out var lot, "lot")) return false;
         if (!TryGetValue(dict, out var expiryRaw, "expiry", "exp")) return false;
 
-        if (!TryParseDate(expiryRaw, out var expiry))
+        if (!TryParseDate(expiryRaw, out var expiry, out var isExpiryDayZero))
         {
             return false;
         }
 
         DateTime? manufacture = null;
         if (TryGetValue(dict, out var mfgRaw, "manufacture", "mfg") &&
-            TryParseDate(mfgRaw, out var mfgDate))
+            TryParseDate(mfgRaw, out var mfgDate, out _))
         {
             manufacture = mfgDate;
         }
 
-        label = new LabelData(gtin, lot, expiry, manufacture);
+        label = new LabelData(gtin, lot, expiry, manufacture, isExpiryDayZero);
         return true;
     }
 
-    private static bool TryParseDate(string value, out DateTime date)
+    private static bool TryParseDate(string value, out DateTime date, out bool isExpiryDayZero)
     {
+        isExpiryDayZero = false;
         var normalized = value.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
         {
@@ -225,7 +226,10 @@ public sealed class CsvLabelSource : ILabelSource
             && int.TryParse(zeroDayMatch.Groups["month"].Value, out var month)
             && month is >= 1 and <= 12)
         {
-            date = new DateTime(year, month, 1);
+            // Calculate the last day of the month
+            var lastDay = DateTime.DaysInMonth(year, month);
+            date = new DateTime(year, month, lastDay);
+            isExpiryDayZero = true;
             return true;
         }
 
