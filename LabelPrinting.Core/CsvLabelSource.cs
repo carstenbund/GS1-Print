@@ -210,14 +210,16 @@ public sealed class CsvLabelSource : ILabelSource
 
     private static bool TryParseDate(string value, out DateTime date)
     {
-        value = value.Trim();
-        if (string.IsNullOrWhiteSpace(value))
+        var normalized = value.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
         {
             date = default;
             return false;
         }
 
-        var zeroDayMatch = Regex.Match(value, @"^(?<year>\d{4})-(?<month>\d{2})-00$");
+        normalized = StripTimeComponent(normalized);
+
+        var zeroDayMatch = Regex.Match(normalized, @"^(?<year>\d{4})-(?<month>\d{2})-00$");
         if (zeroDayMatch.Success
             && int.TryParse(zeroDayMatch.Groups["year"].Value, out var year)
             && int.TryParse(zeroDayMatch.Groups["month"].Value, out var month)
@@ -227,12 +229,12 @@ public sealed class CsvLabelSource : ILabelSource
             return true;
         }
 
-        if (DateTime.TryParseExact(value, SupportedDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+        if (DateTime.TryParseExact(normalized, SupportedDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out date))
         {
             return true;
         }
 
-        if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var oaDate))
+        if (double.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out var oaDate))
         {
             try
             {
@@ -245,7 +247,25 @@ public sealed class CsvLabelSource : ILabelSource
             }
         }
 
-        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out date);
+        return DateTime.TryParse(normalized, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out date);
+    }
+
+    private static string StripTimeComponent(string value)
+    {
+        var delimiters = new[] { ' ', 'T' };
+        foreach (var delimiter in delimiters)
+        {
+            var index = value.IndexOf(delimiter);
+            if (index <= 0 || index == value.Length - 1) continue;
+
+            var potentialTime = value[(index + 1)..].Trim();
+            if (TimeSpan.TryParse(potentialTime, out _))
+            {
+                return value[..index];
+            }
+        }
+
+        return value;
     }
 
     private static bool IsExcelExtension(string extension)
