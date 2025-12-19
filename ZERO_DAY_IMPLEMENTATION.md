@@ -30,53 +30,73 @@ This implementation handles expiration dates with day "00" (e.g., `2025-02-00`) 
 
 ### Test Case 1: February 2025 (Non-leap year)
 - **Input**: `2025-02-00`
-- **Stored DateTime**: `2025-02-28` (last day calculated)
+- **Stored DateTime**: `2025-02-28` (last day calculated - NOZERO logic)
 - **Barcode (AI 17)**: `250228` (yyMMdd format = February 28, 2025)
-- **Human-readable (AI 17)**: `2025-02-00`
-- **Bold EXP line**: `EXP  2025-02-00`
+- **Human-readable (AI 17)**: `2025-02-00` (shows "-00")
+- **Bold EXP line**: `EXP  2025-02` (no "-00")
 
 ### Test Case 2: April 2025 (30 days)
 - **Input**: `2025-04-00`
-- **Stored DateTime**: `2025-04-30`
+- **Stored DateTime**: `2025-04-30` (NOZERO logic)
 - **Barcode (AI 17)**: `250430` (April 30, 2025)
-- **Human-readable (AI 17)**: `2025-04-00`
-- **Bold EXP line**: `EXP  2025-04-00`
+- **Human-readable (AI 17)**: `2025-04-00` (shows "-00")
+- **Bold EXP line**: `EXP  2025-04` (no "-00")
 
 ### Test Case 3: June 2025 (30 days)
 - **Input**: `2025-06-00`
-- **Stored DateTime**: `2025-06-30`
+- **Stored DateTime**: `2025-06-30` (NOZERO logic)
 - **Barcode (AI 17)**: `250630` (June 30, 2025)
-- **Human-readable (AI 17)**: `2025-06-00`
-- **Bold EXP line**: `EXP  2025-06-00`
+- **Human-readable (AI 17)**: `2025-06-00` (shows "-00")
+- **Bold EXP line**: `EXP  2025-06` (no "-00")
 
 ### Test Case 4: February 2024 (Leap year)
 - **Input**: `2024-02-00`
-- **Stored DateTime**: `2024-02-29` (leap year)
+- **Stored DateTime**: `2024-02-29` (leap year - NOZERO logic)
 - **Barcode (AI 17)**: `240229` (February 29, 2024)
-- **Human-readable (AI 17)**: `2024-02-00`
-- **Bold EXP line**: `EXP  2024-02-00`
+- **Human-readable (AI 17)**: `2024-02-00` (shows "-00")
+- **Bold EXP line**: `EXP  2024-02` (no "-00")
 
 ### Test Case 5: December 2025 (31 days)
 - **Input**: `2025-12-00`
-- **Stored DateTime**: `2025-12-31`
+- **Stored DateTime**: `2025-12-31` (NOZERO logic)
 - **Barcode (AI 17)**: `251231` (December 31, 2025)
-- **Human-readable (AI 17)**: `2025-12-00`
-- **Bold EXP line**: `EXP  2025-12-00`
+- **Human-readable (AI 17)**: `2025-12-00` (shows "-00")
+- **Bold EXP line**: `EXP  2025-12` (no "-00")
 
 ### Test Case 6: January 2025 (31 days)
 - **Input**: `2025-01-00`
-- **Stored DateTime**: `2025-01-31`
+- **Stored DateTime**: `2025-01-31` (NOZERO logic)
 - **Barcode (AI 17)**: `250131` (January 31, 2025)
-- **Human-readable (AI 17)**: `2025-01-00`
-- **Bold EXP line**: `EXP  2025-01-00`
+- **Human-readable (AI 17)**: `2025-01-00` (shows "-00")
+- **Bold EXP line**: `EXP  2025-01` (no "-00")
+
+## Display Format Summary
+
+When a date with day "00" is encountered, the system produces three different outputs:
+
+| Component | Format | Example for 2028-11-00 | Purpose |
+|-----------|--------|------------------------|---------|
+| **Bold EXP Line** | `yyyy-MM` | `EXP  2028-11` | Clear, clean display for humans |
+| **Human-readable (AI 17)** | `yyyy-MM-00` | `(17)2028-11-00` | Shows original "00" specification |
+| **GS1 Barcode (AI 17)** | `yyMMdd` | `281130` | Actual last day for scanners |
+
+## NOZERO Logic (Last Day Calculation)
+
+The code calculates the actual last day of the month and stores it in the DateTime:
+- February (non-leap): day 28
+- February (leap year): day 29
+- April, June, September, November: day 30
+- January, March, May, July, August, October, December: day 31
+
+**This logic is preserved** in case regulations change in the future. The barcode will always contain a valid, scannable date.
 
 ## GS1 DataMatrix Compatibility
 
-The ZXing library used for barcode generation will receive the actual last day of the month in the GS1 payload:
-- For `2025-02-00` input → payload will contain `17250228` (AI 17 + February 28, 2025)
+The ZXing library used for barcode generation receives the actual last day of the month in the GS1 payload:
+- For `2028-11-00` input → DateTime stores `2028-11-30` → payload contains `17281130` (AI 17 + November 30, 2028)
 - This is a valid GS1 date format that barcode scanners can read
 
-The human sees "2025-02-00" on the label, while the barcode scanner reads the actual expiration date "2025-02-28", which is semantically correct since "00" conventionally means "end of month".
+The barcode scanner reads the actual expiration date (e.g., "2028-11-30"), which is semantically correct since "00" conventionally means "end of month".
 
 ## Testing
 

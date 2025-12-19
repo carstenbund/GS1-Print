@@ -72,9 +72,8 @@ public sealed class GdiLabelRenderer
     {
         var humanReadable = Gs1HumanReadableBuilder.Build(data);
         var lines = SplitHumanReadableLines(humanReadable);
-        var expiryValue = data.IsExpiryDayZero
-            ? data.Expiry.ToString("yyyy-MM", CultureInfo.InvariantCulture) + "-00"
-            : data.Expiry.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        // Bold EXP line shows yyyy-MM format (without "-00" even for zero-day dates)
+        var expiryValue = data.Expiry.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
         return (lines, $"EXP  {expiryValue}");
     }
